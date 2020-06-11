@@ -3224,7 +3224,7 @@ curl https://repo.dovecot.org/DOVECOT-REPO-GPG | gpg --import
 gpg --export ED409DA1 > /etc/apt/trusted.gpg.d/dovecot.gpg
 echo "deb https://repo.dovecot.org/ce-2.3-latest/${dist}/$(lsb_release -cs) $(lsb_release -cs) main" > /etc/apt/sources.list.d/dovecot.list
 apt-get update
-apt-get install dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd -y
+apt-get install dovecot-core dovecot-imapd dovecot-lmtpd -y
 systemctl enable dovecot
 adduser dovecot mail
 cd /usr/share/nginx/
@@ -3583,16 +3583,6 @@ service imap-login {
   #vsz_limit = $default_vsz_limit
 }
 
-service pop3-login {
-  inet_listener pop3 {
-    #port = 110
-  }
-  inet_listener pop3s {
-    #port = 995
-    #ssl = yes
-  }
-}
-
 service submission-login {
   inet_listener submission {
     #port = 587
@@ -3626,11 +3616,6 @@ service imap {
   #vsz_limit = $default_vsz_limit
 
   # Max. number of IMAP processes (connections)
-  #process_limit = 1024
-}
-
-service pop3 {
-  # Max. number of POP3 processes (connections)
   #process_limit = 1024
 }
 
