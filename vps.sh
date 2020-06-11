@@ -3077,7 +3077,7 @@ myhostname = ${domain}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = /etc/mailname
-mydestination = $myhostname, ${domain}, localhost.${domain}, , localhost
+mydestination = \$myhostname, ${domain}, localhost.${domain}, localhost
 relayhost = 
 mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 mailbox_size_limit = 0
@@ -3094,11 +3094,11 @@ smtpd_helo_restrictions = permit_mynetworks permit_sasl_authenticated reject_non
 disable_vrfy_command = yes
 
 smtpd_sender_restrictions = permit_mynetworks permit_sasl_authenticated reject_unknown_sender_domain reject_unknown_reverse_client_hostname reject_unknown_client_hostname
-smtpd_recipient_restrictions =
-   permit_mynetworks,
-   permit_sasl_authenticated,
-   reject_unauth_destination,
-   check_policy_service unix:private/policyd-spf
+#smtpd_recipient_restrictions =
+#   permit_mynetworks,
+#   permit_sasl_authenticated,
+#   reject_unauth_destination,
+#   check_policy_service unix:private/policyd-spf
 
 # Milter configuration
 milter_default_action = accept
@@ -3109,6 +3109,8 @@ non_smtpd_milters = \$smtpd_milters
 smtpd_sasl_security_options = noanonymous
 smtpd_sasl_path = private/auth
 smtpd_sasl_auth_enable = yes
+
+smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
 EOF
 	cat > '/etc/postfix/master.cf' << EOF
 #
@@ -3207,8 +3209,8 @@ mailman   unix  -       n       n       -       -       pipe
 #  -o smtpd_sasl_type=dovecot
 #  -o smtpd_sasl_path=private/auth
 
-  policyd-spf  unix  -       n       n       -       0       spawn
-    user=policyd-spf argv=/usr/bin/policyd-spf
+#  policyd-spf  unix  -       n       n       -       0       spawn
+#    user=policyd-spf argv=/usr/bin/policyd-spf
 EOF
 	cat > '/etc/aliases' << EOF
 # See man 5 aliases for format
@@ -3216,6 +3218,8 @@ postmaster:    root
 root:   ${mailuser}
 EOF
 newaliases
+echo "/^User-Agent.*Roundcube Webmail/            IGNORE" > /etc/postfix/smtp_header_checks
+postmap /etc/postfix/smtp_header_checks
 curl https://repo.dovecot.org/DOVECOT-REPO-GPG | gpg --import
 gpg --export ED409DA1 > /etc/apt/trusted.gpg.d/dovecot.gpg
 echo "deb https://repo.dovecot.org/ce-2.3-latest/${dist}/$(lsb_release -cs) $(lsb_release -cs) main" > /etc/apt/sources.list.d/dovecot.list
